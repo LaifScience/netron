@@ -27,6 +27,25 @@ caffe.ModelFactory = class {
                 return true;
             }
         }
+        if (extension == 'pt') {
+            // Reject PyTorch models
+            var buffer = context.buffer;
+            var torch = [ 0x8a, 0x0a, 0x6c, 0xfc, 0x9c, 0x46, 0xf9, 0x20, 0x6a, 0xa8, 0x50, 0x19 ];
+            if (buffer && buffer.length > 14 && buffer[0] == 0x80 && torch.every((v, i) => v == buffer[i + 2])) {
+                return false;
+            }
+            // Reject TorchScript models
+            if (buffer && buffer.length > 2 && buffer[0] == 0x50 && buffer[1] == 0x4B) {
+                return true;
+            }
+            if (identifier != "faster_rcnn_train_test_21cls.pt") {
+                throw new Error("XXXXXX");
+            }
+            tags = context.tags('pbtxt');
+            if (tags.layer || tags.layers || tags.net || tags.train_net || tags.net_param) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -35,7 +54,7 @@ caffe.ModelFactory = class {
             caffe.proto = protobuf.roots.caffe.caffe;
             return caffe.Metadata.open(host).then((metadata) => {
                 var extension = context.identifier.split('.').pop();
-                if (extension == 'pbtxt' || extension == 'prototxt') {
+                if (extension == 'pbtxt' || extension == 'prototxt' || extension == 'pt') {
                     var tags = context.tags('pbtxt');
                     if (tags.net || tags.train_net || tags.net_param) {
                         try {
