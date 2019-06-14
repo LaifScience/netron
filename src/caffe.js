@@ -354,7 +354,7 @@ caffe.Graph = class {
                     if (attribute.name == 'shape') {
                         if (attribute._value.length == 1 && attribute._value[0].dim) {
                             var input = node._outputs[0];
-                            var type = new caffe.TensorType(null, attribute._value[0].dim);
+                            var type = new caffe.TensorType(null, new caffe.TensorShape(attribute._value[0].dim));
                             this._inputs.push(new caffe.Argument(input, [ new caffe.Connection(input, type) ]));
                             return true;
                         }
